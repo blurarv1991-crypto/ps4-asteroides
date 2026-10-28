@@ -45,14 +45,10 @@ jobs:
 
       - name: Ver codigo SDL2
         run: |
-          echo "ARCHIVOS DEL SAMPLE SDL2:"
-          find src/samples/SDL2 -type f | sort
-          echo "TAMAÑO DE LOS ARCHIVOS DE CODIGO:"
-          wc -l src/samples/SDL2/*.cpp src/samples/SDL2/*.h src/samples/SDL2/*/*.cpp src/samples/SDL2/*/*.h 2>/dev/null
           echo "MAKEFILE:"
           cat src/samples/SDL2/Makefile
-          echo "CODIGO PRINCIPAL:"
-          for f in src/samples/SDL2/*/*.cpp; do echo "===== $f ====="; cat -n "$f"; done
+          echo "MAIN.CPP:"
+          cat -n src/samples/SDL2/SDL2/main.cpp
 
       - name: Personalizar juego
         run: |
