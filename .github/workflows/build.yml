@@ -45,10 +45,9 @@ jobs:
 
       - name: Ver codigo SDL2
         run: |
-          echo "MAKEFILE:"
-          cat src/samples/SDL2/Makefile
-          echo "MAIN.CPP:"
-          cat -n src/samples/SDL2/SDL2/main.cpp
+          for f in Game.h Player.h Enemy.h; do echo "===== $f ====="; cat -n src/samples/SDL2/SDL2/$f; done
+          echo "TEXTOS EN EL CODIGO:"
+          grep -n '"' src/samples/SDL2/SDL2/HUD.cpp src/samples/SDL2/SDL2/Game.cpp | grep -v DEBUGLOG | head -40
 
       - name: Personalizar juego
         run: |
