@@ -7,6 +7,7 @@ sed -i 's/"Intermediate"/"Intermedio"/; s/"Hard"/"Dificil"/; s/"Very Hard"/"Muy 
 sed -i 's/"Easy"/"Facil"/' $D/Game.cpp
 F=0.7 perl -pi -e 's/moveSpeed = ([0-9.]+);/"moveSpeed = ".($1*$ENV{F}).";"/e' $D/Enemy.cpp
 python3 mijuego/jefe.py
+python3 mijuego/vida.py
 A=src/samples/SDL2/assets/images
 sudo apt-get install -y imagemagick > /dev/null
 convert nave.png -background none -rotate 180 -compress None tga:$A/player.tga
@@ -17,3 +18,4 @@ grep -n "Facil" $D/Game.cpp
 grep -n "Intermedio\|Dificil\|Muerte" $D/Game.h
 grep -n "moveSpeed =" $D/Enemy.cpp
 grep -n "bossActive" $D/Game.cpp
+grep -n "herirNave" $D/Game.cpp
