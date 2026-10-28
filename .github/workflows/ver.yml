@@ -10,5 +10,11 @@ jobs:
       - name: Clonar sample
         run: git clone --depth 1 --branch v0.5.4 https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain.git src
 
-      - name: Ver Enemy.cpp
-        run: cat -n src/samples/SDL2/SDL2/Enemy.cpp
+      - name: Ver Game.cpp parte 1
+        run: sed -n '1,140p' src/samples/SDL2/SDL2/Game.cpp | cat -n
+
+      - name: Ver Game.cpp parte 2
+        run: sed -n '141,280p' src/samples/SDL2/SDL2/Game.cpp | cat -n
+
+      - name: Ver Game.cpp parte 3
+        run: sed -n '281,411p' src/samples/SDL2/SDL2/Game.cpp | cat -n
