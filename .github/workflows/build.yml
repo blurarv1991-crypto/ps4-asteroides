@@ -1,0 +1,98 @@
+name: Build PKG
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SAMPLE: SDL2
+      OO_VERSION: v0.5.4
+      OO_PS4_TOOLCHAIN: ${{ github.workspace }}/OpenOrbis
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "1"
+      DOTNET_ROLL_FORWARD: Major
+    steps:
+      - name: Instalar clang y lld
+        run: sudo apt-get update && sudo apt-get install -y clang lld
+
+      - name: Descargar toolchain
+        run: |
+          curl -s https://api.github.com/repos/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/tags/$OO_VERSION | grep browser_download_url | cut -d '"' -f 4 > assets.txt
+          echo "Archivos de la Release:"
+          cat assets.txt
+          URL=$(grep -i linux assets.txt | head -1)
+          if [ -z "$URL" ]; then URL=$(grep -E '\.(tar\.gz|zip)$' assets.txt | head -1); fi
+          echo "Usando: $URL"
+          curl -L --fail -o toolchain.dl "$URL"
+          mkdir -p "$OO_PS4_TOOLCHAIN"
+          case "$URL" in
+            *.zip) unzip -q toolchain.dl -d "$OO_PS4_TOOLCHAIN" ;;
+            *) tar -xzf toolchain.dl -C "$OO_PS4_TOOLCHAIN" ;;
+          esac
+          F=$(find "$OO_PS4_TOOLCHAIN" -maxdepth 4 -name link.x | head -1)
+          if [ -z "$F" ]; then echo "No encontre link.x"; find "$OO_PS4_TOOLCHAIN" -maxdepth 3 | head -50; exit 1; fi
+          ROOT=$(dirname "$F")
+          echo "Raiz del toolchain: $ROOT"
+          if [ "$ROOT" != "$OO_PS4_TOOLCHAIN" ]; then cp -a "$ROOT"/. "$OO_PS4_TOOLCHAIN"/; fi
+          chmod -R +x "$OO_PS4_TOOLCHAIN/bin" || true
+          ls "$OO_PS4_TOOLCHAIN"
+          ls "$OO_PS4_TOOLCHAIN/include/c++/v1" | head -5
+
+      - name: Descargar samples
+        run: git clone --depth 1 --branch "$OO_VERSION" https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain.git src
+
+      - name: Ver codigo SDL2
+        run: |
+          echo "ARCHIVOS DEL SAMPLE SDL2:"
+          find src/samples/SDL2 -type f | sort
+          echo "TAMAÑO DE LOS ARCHIVOS DE CODIGO:"
+          wc -l src/samples/SDL2/*.cpp src/samples/SDL2/*.h src/samples/SDL2/*/*.cpp src/samples/SDL2/*/*.h 2>/dev/null
+          echo "MAKEFILE:"
+          cat src/samples/SDL2/Makefile
+          echo "CODIGO PRINCIPAL:"
+          for f in src/samples/SDL2/*/*.cpp; do echo "===== $f ====="; cat -n "$f"; done
+
+      - name: Personalizar juego
+        run: |
+          sed -i 's/Score: /Puntos: /g' src/samples/SDL2/SDL2/*.cpp
+          grep -rn "Puntos" src/samples/SDL2/SDL2 | head
+
+      - name: Listar samples
+        run: |
+          echo "SAMPLES DISPONIBLES:"
+          ls src/samples
+          echo "LIBRERIAS DEL TOOLCHAIN:"
+          ls "$OO_PS4_TOOLCHAIN/lib" | head -60
+
+      - name: Instalar libssl1.1
+        run: |
+          wget -q http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb || wget -q http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.24_amd64.deb
+          sudo dpkg -i libssl1.1_*.deb
+
+      - name: Compilar sample
+        run: |
+          cd src/samples/$SAMPLE
+          mkdir -p sce_sys/about
+          R=$(find "$OO_PS4_TOOLCHAIN" ../.. -name right.sprx | head -1)
+          echo "right.sprx encontrado en: $R"
+          if [ -z "$R" ]; then echo "No hay right.sprx"; find "$OO_PS4_TOOLCHAIN" -maxdepth 3 -type d | head -40; exit 1; fi
+          cp "$R" sce_sys/about/right.sprx
+          mkdir -p sce_module
+          for f in libc.prx libSceFios2.prx; do P=$(find "$OO_PS4_TOOLCHAIN" ../.. -name $f | head -1); echo "$f: $P"; if [ -n "$P" ]; then cp "$P" sce_module/$f; fi; done
+          grep -n "icon0.png" Makefile
+          sed -i 's|sce_sys/icon0.png"|sce_sys/icon0.png sce_module/libc.prx sce_module/libSceFios2.prx"|' Makefile
+          make
+
+      - name: Reunir el pkg
+        run: |
+          mkdir -p salida
+          find src/samples/$SAMPLE -name "*.pkg" -exec cp {} salida/ \;
+          ls -la salida
+
+      - name: Subir artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hello-pkg
+          path: salida/*.pkg
