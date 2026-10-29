@@ -10,11 +10,10 @@ jobs:
       - name: Clonar sample
         run: git clone --depth 1 --branch v0.5.4 https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain.git src
 
-      - name: Ver Game.cpp parte 1
-        run: sed -n '1,140p' src/samples/SDL2/SDL2/Game.cpp | cat -n
+      - name: Ver Projectile
+        run: |
+          for f in Projectile.h Projectile.cpp; do echo "===== $f ====="; cat -n src/samples/SDL2/SDL2/$f; done
 
-      - name: Ver Game.cpp parte 2
-        run: sed -n '141,280p' src/samples/SDL2/SDL2/Game.cpp | cat -n
-
-      - name: Ver Game.cpp parte 3
-        run: sed -n '281,411p' src/samples/SDL2/SDL2/Game.cpp | cat -n
+      - name: Ver Player TTF HUD
+        run: |
+          for f in Player.cpp TTF.h HUD.h; do echo "===== $f ====="; cat -n src/samples/SDL2/SDL2/$f; done
