@@ -7,6 +7,7 @@ F=0.7 perl -pi -e 's/moveSpeed = ([0-9.]+);/"moveSpeed = ".($1*$ENV{F}).";"/e' $
 python3 mijuego/jefe.py
 python3 mijuego/vida.py
 python3 mijuego/niveles.py
+python3 mijuego/escudo.py
 A=src/samples/SDL2/assets/images
 S=72
 sudo apt-get install -y imagemagick > /dev/null
@@ -19,4 +20,4 @@ convert guardian.png -resize 224x224 -compress None tga:$A/guardian.tga
 identify $A/*.tga
 grep -n "Puntos\|Fin del\|Pulsa" $D/HUD.cpp
 grep -n "SetTipo" $D/Game.cpp
-grep -n "DIFFICULTY_LEVEL" $D/Game.h
+grep -n "shieldEnd" $D/Game.cpp
