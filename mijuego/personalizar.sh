@@ -8,6 +8,7 @@ python3 mijuego/jefe.py
 python3 mijuego/vida.py
 python3 mijuego/niveles.py
 python3 mijuego/escudo.py
+python3 mijuego/armas.py
 A=src/samples/SDL2/assets/images
 S=72
 sudo apt-get install -y imagemagick > /dev/null
@@ -17,7 +18,8 @@ convert interceptor.png -resize ${S}x${S} -compress None tga:$A/interceptor.tga
 convert blindado.png -resize ${S}x${S} -compress None tga:$A/blindado.tga
 convert atacante.png -resize ${S}x${S} -compress None tga:$A/atacante.tga
 convert guardian.png -resize 224x224 -compress None tga:$A/guardian.tga
+convert escudo.png -resize 150x150 -compress None tga:$A/escudo.tga
 identify $A/*.tga
 grep -n "Puntos\|Fin del\|Pulsa" $D/HUD.cpp
 grep -n "SetTipo" $D/Game.cpp
-grep -n "shieldEnd" $D/Game.cpp
+grep -n "armaActual" $D/Game.cpp
